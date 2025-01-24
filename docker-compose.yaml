@@ -1,0 +1,41 @@
+version: '3.8'  # Make sure you're using a valid version
+
+services:
+  mysql:
+    image: 'mysql:5.7'
+    container_name: mysql
+    environment:
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: adminpass
+      MYSQL_DATABASE: flaskdevops
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./message.sql:/docker-entrypoint-initdb.d/message.sql
+    ports:
+      - '3306:3306'
+    networks:
+      - twotierflaskapp
+
+  flaskapp:
+    build:
+      context: .
+      dockerfile: Dockerfile 
+    container_name: flaskapp
+    environment:
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: adminpass
+      MYSQL_DATABASE: flaskdevops
+    depends_on:
+      - mysql
+    ports:
+      - '5000:5000'
+    networks:
+      - twotierflaskapp
+
+volumes:
+  mysql: {}
+  message.sql: {}
+
+networks:
+  twotierflaskapp:
+    driver: bridge
